@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
 
+
+
 class RegisteredUserController extends Controller
 {
     /**
@@ -33,14 +35,19 @@ class RegisteredUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'mobile' => ['required', 'unique:' . User::class],
+
         ]);
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
+        $user= User::create([
+           'name' => $request->name,
+           'email' => $request->email,
+           'mobile' => $request->mobile,
+           'password' => Hash::make ($request->password),
 
+        ]);
+        $request->role=($request->role=='service_provider')? 'service_provider':'client';
+        $user->assignRole($request->role);
         event(new Registered($user));
 
         Auth::login($user);
